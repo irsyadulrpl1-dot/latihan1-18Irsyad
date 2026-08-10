@@ -37,7 +37,24 @@ double hitungHargaAkhir(double total, double persenPotongan) {
 }
 
 // ====================================================================
-// KELAS BARANG (OOP)
+// RPL-12.2-504: JUSTIFIKASI OOP
+// --------------------------------------------------------------------
+// PERTANYAAN: 
+// "Apa keuntungan memodelkan barang sebagai objek bagi pengembangan 
+// sistem koperasi ke depan?"
+//
+// JAWABAN:
+// Memodelkan barang sebagai objek (OOP) membuat kode jauh lebih 
+// terstruktur, rapi, dan mudah dikembangkan. Keuntungan utamanya:
+// 1. Data Terpusat: Nama, harga, dan stok disatukan dalam satu wadah 
+//    (objek), tidak bertebaran di variabel lepas atau list terpisah.
+// 2. Mudah Dikembangkan: Kalau ke depan koperasi mau tambah atribut 
+//    (misal: tanggal kadaluarsa atau kode barcode), kita cukup 
+//    tambahkan di kelas Barang saja, tidak perlu utak-atik kode di 
+//    seluruh aplikasi.
+// 3. Punya Perilaku (Method): Objek bisa punya fungsi bawaan seperti 
+//    isTersedia() atau tampilkan(), sehingga logika bisnis koperasi 
+//    jadi lebih rapi dan gampang dipakai ulang.
 // ====================================================================
 class Barang {
   String nama;
@@ -69,10 +86,8 @@ void main() {
   // ==============================
   // DATA BARANG (MEMAKAI OBJEK)
   // ==============================
-  // Membuat objek barang1 dari kelas Barang untuk transaksi utama
   Barang barang1 = Barang(nama: "Buku Tulis", harga: 3000.0, stok: 100);
 
-  // Mengambil data dari objek barang1 agar kompatibel dengan kode transaksi lama
   String namaBarang = barang1.nama;
   double hargaAnggota = barang1.harga; 
   double hargaUmum = 3500.0;
@@ -84,37 +99,15 @@ void main() {
   Barang barang2 = Barang(nama: "Pulpen", harga: 2500.0, stok: 50);
   Barang barang3 = Barang(nama: "Roti", harga: 5000.0, stok: 15);
   
-  // Menyimpan ketiga objek ke dalam List<Barang>
   List<Barang> listBarang = [barang1, barang2, barang3];
 
   print("=== KARTU BARANG KOPERASI (List Objek) ===");
-  // Menampilkan semua memakai perulangan for
   for (Barang item in listBarang) {
     item.tampilkan();
   }
 
-  // ---------------------------------------------------------
-  // PERBANDINGAN DENGAN SPRINT 3 (KOMENTAR RPL-12.2-503)
-  // ---------------------------------------------------------
-  // Di Sprint 3, kita menyimpan data pakai 2 list terpisah:
-  // List<String> daftarNamaBarang = ["Buku Tulis", "Pulpen", ...];
-  // List<int> daftarHargaBarang = [3000, 2500, ...];
-  //
-  // KELEBIHAN CARA SEKARANG (List<Barang>):
-  // 1. Lebih Rapi & OOP: Nama, harga, dan stok satu barang disatukan dalam 
-  //    satu objek utuh, tidak bertebaran di list yang berbeda.
-  // 2. Lebih Aman: Tidak ada risai indeksnya nyangkut/urutannya salah antara 
-  //    list nama dan list harga.
-  // 3. Lebih Gampang Dikelola: Kalau mau tambah barang baru, cukup bikin 
-  //    objek baru masukin ke list. Method objeknya otomatis bisa dipake.
-  // ---------------------------------------------------------
-
-  // ==============================================================
-  // FITUR (RPL-12.2-1S1): TIPE DATA BOOLEAN
-  // ==============================================================
   bool tersedia = barang1.isTersedia();
   bool statusTersedia = tersedia;
-  // ==============================================================
 
   String kategori = "atk";
 
@@ -233,7 +226,7 @@ void main() {
       diskon: diskon,
       jumlahPotongan: jumlahPotongan,
       hargaAkhir: hargaAkhir,
-      listBarang: listBarang, // Mengirim List Objek ke UI
+      listBarang: listBarang,
       riwayatPenjualan: riwayatPenjualan,
     ),
   );
@@ -255,7 +248,7 @@ class MyApp extends StatelessWidget {
   final double diskon;
   final double jumlahPotongan;
   final double hargaAkhir;
-  final List<Barang> listBarang; // Parameter List Objek
+  final List<Barang> listBarang;
   final List<String> riwayatPenjualan;
 
   const MyApp({
@@ -322,7 +315,7 @@ class HomePage extends StatefulWidget {
   final double diskon;
   final double jumlahPotongan;
   final double hargaAkhir;
-  final List<Barang> listBarang; // Menerima List Objek
+  final List<Barang> listBarang;
   final List<String> riwayatPenjualan;
 
   const HomePage({
@@ -556,9 +549,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  // Kartu produk sekarang mengambil data langsung dari List<Barang>
   Widget _buildProductCard(int index) {
-    Barang barang = widget.listBarang[index]; // Mengambil objek dari list
+    Barang barang = widget.listBarang[index];
     
     return StatefulBuilder(
       builder: (context, setState) {
@@ -601,12 +593,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          barang.nama, // Ambil dari objek
+                          barang.nama,
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          barang.isTersedia() ? "🟢 Tersedia" : "🔴 Stok Habis", // Ambil dari method objek
+                          barang.isTersedia() ? "🟢 Tersedia" : "🔴 Stok Habis",
                           style: TextStyle(
                             fontSize: 12,
                             color: barang.isTersedia() ? Colors.green : Colors.red,
@@ -622,7 +614,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      formatRupiah(barang.harga), // Ambil dari objek
+                      formatRupiah(barang.harga),
                       style: const TextStyle(
                         color: Color(0xFFE53935),
                         fontWeight: FontWeight.bold,
@@ -675,7 +667,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: widget.listBarang.length, // Pakai panjang list objek
+              itemCount: widget.listBarang.length,
               itemBuilder: (context, index) => _buildProductCard(index),
             ),
             const Divider(),
