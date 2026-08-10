@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:latihan1_18irsyad/main.dart'; // Ganti dengan nama package/proyek Anda
@@ -21,7 +20,7 @@ void main() {
         hargaAkhir: 3000.0,
         daftarNamaBarang: ["A", "B"],
         daftarHargaBarang: [1000, 2000],
-        riwayatPenjualan: ["Terjual 1, sisa stok: 0"], // Tambahkan parameter ini
+        riwayatPenjualan: ["Terjual 1, sisa stok: 0"],
       ),
     );
 
