@@ -1,293 +1,226 @@
-// Menghilangkan peringatan penggunaan print karena print digunakan untuk kebutuhan tugas
-// ignore_for_file: avoid_print
+// Menghilangkan peringatan penggunaan print dan dead code
+// ignore_for_file: avoid_print, dead_code
 
 import 'package:flutter/material.dart';
 
 // ====================================================================
 // HELPER FUNCTION: FORMAT RUPIAH (PEMISAH RIBUAN)
-// RPL-12.2-1S2: Petugas ingin harga tampil dengan pemisah ribuan (mis. Rp12.500).
-// Cara memformatnya: Kita membuat fungsi manual yang memisahkan angka 
-// menjadi ribuan menggunakan titik (.) tanpa package tambahan.
-// Sumber Referensi: Dart String Manipulation (https://dart.dev/guides/language/numbers)
 // ====================================================================
 String formatRupiah(dynamic number) {
-  // Mengubah angka (double/int) menjadi string tanpa angka di belakang koma
   String strNumber = number.toDouble().toStringAsFixed(0);
-  
   String result = '';
   int count = 0;
 
-  // Melakukan perulangan dari belakang untuk menyisipkan titik setiap 3 digit
   for (int i = strNumber.length - 1; i >= 0; i--) {
     result = strNumber[i] + result;
     count++;
-    
-    // Jika count kelipatan 3 dan bukan digit terakhir, tambahkan titik
     if (count % 3 == 0 && i != 0) {
       result = '.$result';
     }
   }
-  
   return 'Rp$result';
+}
+
+// ====================================================================
+// FUNGSI REUSABLE 1: HITUNG TOTAL BELANJA
+// ====================================================================
+double hitungTotal(int jumlah, double harga) {
+  return jumlah * harga;
+}
+
+// ====================================================================
+// FUNGSI REUSABLE 2: HITUNG HARGA AKHIR SETELAH POTONGAN
+// ====================================================================
+double hitungHargaAkhir(double total, double persenPotongan) {
+  double potongan = total * persenPotongan / 100;
+  return total - potongan;
+}
+
+// ====================================================================
+// KELAS BARANG (OOP)
+// ====================================================================
+class Barang {
+  String nama;
+  double harga;
+  int stok;
+
+  Barang({required this.nama, required this.harga, required this.stok});
+
+  bool isTersedia() {
+    return stok > 0;
+  }
+
+  void tampilkan() {
+    print("----------------------------");
+    print("📦 Nama Barang : $nama");
+    print("💰 Harga       : ${formatRupiah(harga)}");
+    print("📊 Stok        : $stok pcs");
+    print("✅ Status      : ${isTersedia() ? 'Tersedia' : 'Habis'}");
+    print("----------------------------");
+  }
 }
 
 
 // ====================================================================
 // FUNGSI UTAMA (MAIN)
-// Di sinilah program pertama kali dijalankan.
-// Semua data, logika, dan output Debug Console berada di sini.
 // ====================================================================
 void main() {
 
   // ==============================
-  // DATA BARANG
+  // DATA BARANG (MEMAKAI OBJEK)
   // ==============================
+  // Membuat objek barang1 dari kelas Barang untuk transaksi utama
+  Barang barang1 = Barang(nama: "Buku Tulis", harga: 3000.0, stok: 100);
 
-  String namaBarang = "Buku Tulis";
-  double hargaAnggota = 3000.0;
+  // Mengambil data dari objek barang1 agar kompatibel dengan kode transaksi lama
+  String namaBarang = barang1.nama;
+  double hargaAnggota = barang1.harga; 
   double hargaUmum = 3500.0;
+  int jumlahStok = barang1.stok;
 
-  // Jumlah stok barang di koperasi
-  int jumlahStok = 100;
+  // ==============================================================
+  // FITUR (RPL-12.2-502 & RPL-12.2-503): LIST OBJEK BARANG
+  // ==============================================================
+  Barang barang2 = Barang(nama: "Pulpen", harga: 2500.0, stok: 50);
+  Barang barang3 = Barang(nama: "Roti", harga: 5000.0, stok: 15);
+  
+  // Menyimpan ketiga objek ke dalam List<Barang>
+  List<Barang> listBarang = [barang1, barang2, barang3];
+
+  print("=== KARTU BARANG KOPERASI (List Objek) ===");
+  // Menampilkan semua memakai perulangan for
+  for (Barang item in listBarang) {
+    item.tampilkan();
+  }
+
+  // ---------------------------------------------------------
+  // PERBANDINGAN DENGAN SPRINT 3 (KOMENTAR RPL-12.2-503)
+  // ---------------------------------------------------------
+  // Di Sprint 3, kita menyimpan data pakai 2 list terpisah:
+  // List<String> daftarNamaBarang = ["Buku Tulis", "Pulpen", ...];
+  // List<int> daftarHargaBarang = [3000, 2500, ...];
+  //
+  // KELEBIHAN CARA SEKARANG (List<Barang>):
+  // 1. Lebih Rapi & OOP: Nama, harga, dan stok satu barang disatukan dalam 
+  //    satu objek utuh, tidak bertebaran di list yang berbeda.
+  // 2. Lebih Aman: Tidak ada risai indeksnya nyangkut/urutannya salah antara 
+  //    list nama dan list harga.
+  // 3. Lebih Gampang Dikelola: Kalau mau tambah barang baru, cukup bikin 
+  //    objek baru masukin ke list. Method objeknya otomatis bisa dipake.
+  // ---------------------------------------------------------
 
   // ==============================================================
   // FITUR (RPL-12.2-1S1): TIPE DATA BOOLEAN
   // ==============================================================
-  // Rancang: bila stok = 0, bagaimana seharusnya nilai "tersedia"?
-  // Jawaban: Jika stok = 0, maka barang tidak bisa dijual, sehingga
-  // nilai "tersedia" harus menjadi false (tidak tersedia / habis).
-  // Tampilkan status memakai kondisi if/else di bawah ini.
-  
-  bool tersedia;
-  if (jumlahStok == 0) {
-    tersedia = false; // Stok habis, maka tidak tersedia
-  } else {
-    tersedia = true;  // Stok masih ada, maka tersedia
-  }
-
-  // Status apakah barang masih tersedia (true) atau habis (false)
-  // Menggunakan nilai dari variabel 'tersedia' yang sudah dirancang di atas
+  bool tersedia = barang1.isTersedia();
   bool statusTersedia = tersedia;
   // ==============================================================
 
-  // Kategori barang
-  // Pilihan: atk, makanan, minuman
   String kategori = "atk";
-
 
   // ==============================
   // DATA PEMBELI
   // ==============================
-
-  // true = anggota koperasi
-  // false = umum
   bool anggota = true;
-
   int jumlahBeli = 80;
-
 
   // ==============================
   // MENENTUKAN HARGA BERDASARKAN STATUS ANGGOTA
   // ==============================
-
   double hargaDipakai;
-
-  // JIKA anggota
-  // MAKA gunakan harga anggota
-  // JIKA bukan anggota
-  // MAKA gunakan harga umum
   if (anggota == true) {
     hargaDipakai = hargaAnggota;
   } else {
     hargaDipakai = hargaUmum;
   }
 
-
   // ==============================
   // MENGHITUNG TOTAL BELANJA
   // ==============================
-
-  double totalBelanja = jumlahBeli * hargaDipakai;
-
+  double totalBelanja = hitungTotal(jumlahBeli, hargaDipakai);
 
   // ==============================
   // MENENTUKAN DISKON BERTINGKAT
   // ==============================
-
   double diskon = 0;
 
-  // ---------------------------------------------------------
-  // RPL-12.2-2S1 (HOTS-1): ATURAN DISKON BARU
-  // Koperasi menambah aturan: anggota dengan total > 500rb dapat potongan 15%.
-  // Sisipkan aturan ini di urutan paling atas (sebelum aturan lama) agar 
-  // kondisi yang lebih spesifik (anggota & >500rb) dicek lebih dulu.
-  // ---------------------------------------------------------
-  // UJI & BUKTI TIDAK MERUSAK LOGIKA LAMA:
-  // Data saat ini: anggota = true, totalBelanja = 240.000
-  // Karena 240.000 TIDAK LEBIH DARI 500.000, maka aturan baru diskon 15% DILEWATI.
-  // Program akan mengecek aturan lama: 240.000 > 200.000 (BENAR) -> Diskon 10%.
-  // Terbukti aturan lama (diskon 10%) tetap berjalan sempurna tanpa rusak.
-  // ---------------------------------------------------------
-
-  if (anggota == true && totalBelanja > 500000) {
-    // ATURAN BARU: Anggota & belanja > 500rb -> Diskon 15%
-    diskon = 0.15;
-  } else if (totalBelanja > 200000) {
-    // ATURAN LAMA: Total > 200000 -> Diskon 10%
-    diskon = 0.10;
-  } else if (totalBelanja > 100000) {
-    // ATURAN LAMA: Total > 100000 -> Diskon 5%
-    diskon = 0.05;
-  } else {
-    // ATURAN LAMA: Selain itu -> Tidak ada diskon
+  if (totalBelanja < 0) {
+    print("ERROR: Transaksi DITOLAK! Total belanja tidak boleh negatif.");
     diskon = 0;
+  } else {
+    if (anggota == true && totalBelanja > 500000) {
+      diskon = 0.15;
+    } else if (totalBelanja > 200000) {
+      diskon = 0.10;
+    } else if (totalBelanja > 100000) {
+      diskon = 0.05;
+    } else {
+      diskon = 0;
+    }
   }
-
 
   // ==============================
   // MENGHITUNG JUMLAH POTONGAN & HARGA AKHIR
   // ==============================
-
+  double persenPotongan = diskon * 100;
   double jumlahPotongan = totalBelanja * diskon;
-  double hargaAkhir = totalBelanja - jumlahPotongan;
-
+  double hargaAkhir = hitungHargaAkhir(totalBelanja, persenPotongan);
 
   // ==============================
   // MENENTUKAN RAK BARANG (SWITCH-CASE)
   // ==============================
-
   String lokasiRak;
-
-  // Switch digunakan karena kategori memiliki pilihan nilai yang tetap.
-  // Dibandingkan banyak if, switch lebih rapi karena setiap pilihan kategori
-  // langsung memiliki tujuan rak masing-masing sehingga kode lebih mudah dibaca.
   switch (kategori) {
     case "atk":
       lokasiRak = "Rak 1";
       break;
-
     case "makanan":
       lokasiRak = "Rak 2";
       break;
-
     case "minuman":
       lokasiRak = "Rak 3";
       break;
-
     default:
       lokasiRak = "Rak lain";
   }
 
-
-  // ================================================================
-  // FITUR (RPL-12.2-301): DAFTAR BARANG MENGGUNAKAN LIST & FOR
-  // ================================================================
-
-  // List berisi nama-nama barang di koperasi (minimal 4 barang)
-  List<String> daftarNamaBarang = [
-    "Buku Tulis",
-    "Pulpen",
-    "Penghapus",
-    "Roti",
-  ];
-
-  // List berisi harga yang sesuai untuk setiap barang
-  List<int> daftarHargaBarang = [
-    3000,
-    2500,
-    1500,
-    5000,
-  ];
-
-
   // ================================================================
   // FITUR (RPL-12.2-302): PERULANGAN WHILE
-  // Simulasi penjualan Buku Tulis sampai stok habis.
   // ================================================================
-
-  // --------------------------------------------------------
-  // RPL-12.2-303: JUSTIFIKASI (JAWABAN TUGAS DALAM KOMENTAR)
-  // --------------------------------------------------------
-  // PERTANYAAN:
-  // "Bahaya apa yang muncul bila kondisi berhenti pada while keliru, 
-  // dan bagaimana cara untuk memastikan koperasi tidak menjual melebihi stok?"
-  //
-  // JAWABAN:
-  // 1. Bahaya jika kondisi berhenti while keliru:
-  //    - Infinite Loop (Perulangan Tak Terhingga): Jika kondisi tidak pernah 
-  //      bernilai false (misal: lupa mengurangi stok di dalam loop), program 
-  //      akan berjalan terus-menerus. Aplikasi akan macet (hang), memakan 
-  //      seluruh memori/CPU, dan akhirnya force close (crash).
-  //    - Stok Minus (Negatif): Jika kondisi while keliru (misal: while (stok > -5)), 
-  //      koperasi akan terus menjual barang padahal stok sudah habis. Ini merusak 
-  //      data inventaris dan merugikan koperasi secara finansial.
-  //
-  // 2. Cara memastikan koperasi tidak menjual melebihi stok:
-  //    - Gunakan kondisi while yang tepat, yaitu `while (stok > 0)`. Ini memastikan 
-  //      perulangan berhenti tepat saat stok mencapai angka 0.
-  //    - Pastikan ada operasi pengurangan stok di dalam blok while (stok--), agar 
-  //      nilai stok terus mendekati 0 dan kondisi akhirnya tercapai.
-  //    - (Tambahan) Sebelum perulangan, selalu lakukan validasi menggunakan if, 
-  //      misalnya: if (jumlahBeli > stok) maka tolak transaksi.
-  // --------------------------------------------------------
-
-  // Stok awal untuk simulasi (sesuai instruksi: 3)
   int stokBukuTulis = 3;
-
-  // List untuk menyimpan riwayat penjualan agar bisa ditampilkan di layar
   List<String> riwayatPenjualan = [];
 
   print("\n--- Penjualan Buku Tulis ---");
 
-  // Perulangan while: akan terus berjalan selama stok masih lebih dari 0
   while (stokBukuTulis > 0) {
-    // Setiap kali terjual, stok berkurang 1
     stokBukuTulis--;
-
-    // Menyusun teks hasil penjualan
     String barisPenjualan = "Terjual 1, sisa stok: $stokBukuTulis";
-
-    // Menyimpan ke dalam list untuk ditampilkan di UI
     riwayatPenjualan.add(barisPenjualan);
-
-    // Menampilkan di Debug Console
     print(barisPenjualan);
   }
-
 
   // ==============================
   // OUTPUT DEBUG CONSOLE (TRANSAKSI UTAMA)
   // ==============================
-
-  print("\n=== TRANSAKSI KOPERASI ===");
+  print("\n=== TRANSAKSI KOPERASI (Berbasis Objek) ===");
   print("Nama Barang : $namaBarang");
   print("Kategori : $kategori");
   print("Lokasi Rak : $lokasiRak");
   print("Jumlah Stok : $jumlahStok pcs");
-  print("Status Tersedia : $statusTersedia (Dari kondisi bool tersedia)");
+  print("Status Tersedia : $statusTersedia (Dari method isTersedia())");
   print("Status Anggota : $anggota");
   print("Jumlah Beli : $jumlahBeli pcs");
-  
-  // Menggunakan formatRupiah untuk pemisah ribuan
   print("Harga Satuan : ${formatRupiah(hargaDipakai)}");
-  print("Total Belanja : ${formatRupiah(totalBelanja)}");
+  print("Total Belanja : ${formatRupiah(totalBelanja)} (Dihitung via fungsi hitungTotal)");
   print("Diskon : ${diskon * 100}%");
   print("Jumlah Potongan : ${formatRupiah(jumlahPotongan)}");
-  print("Harga Akhir : ${formatRupiah(hargaAkhir)}");
-
-  // Output daftar barang ke Debug Console menggunakan perulangan for
-  print("\n=== DAFTAR BARANG KOPERASI ===");
-  for (int i = 0; i < daftarNamaBarang.length; i++) {
-    print("${i + 1}. ${daftarNamaBarang[i]} - ${formatRupiah(daftarHargaBarang[i])}");
-  }
-
+  print("Harga Akhir : ${formatRupiah(hargaAkhir)} (Dihitung via fungsi hitungHargaAkhir)");
 
   // ==============================
   // MENJALANKAN APLIKASI FLUTTER
   // ==============================
   runApp(
     MyApp(
-      // Mengirim semua data ke widget agar bisa ditampilkan di browser/layar
       namaBarang: namaBarang,
       kategori: kategori,
       lokasiRak: lokasiRak,
@@ -300,20 +233,16 @@ void main() {
       diskon: diskon,
       jumlahPotongan: jumlahPotongan,
       hargaAkhir: hargaAkhir,
-      daftarNamaBarang: daftarNamaBarang,
-      daftarHargaBarang: daftarHargaBarang,
-      riwayatPenjualan: riwayatPenjualan, // Mengirim data while loop
+      listBarang: listBarang, // Mengirim List Objek ke UI
+      riwayatPenjualan: riwayatPenjualan,
     ),
   );
 }
 
-
 // ====================================================================
 // WIDGET ROOT APLIKASI (MyApp)
-// Widget ini menjadi induk dari seluruh tampilan aplikasi.
 // ====================================================================
 class MyApp extends StatelessWidget {
-  // Variabel untuk menerima data dari main()
   final String namaBarang;
   final String kategori;
   final String lokasiRak;
@@ -326,8 +255,7 @@ class MyApp extends StatelessWidget {
   final double diskon;
   final double jumlahPotongan;
   final double hargaAkhir;
-  final List<String> daftarNamaBarang;
-  final List<int> daftarHargaBarang;
+  final List<Barang> listBarang; // Parameter List Objek
   final List<String> riwayatPenjualan;
 
   const MyApp({
@@ -344,8 +272,7 @@ class MyApp extends StatelessWidget {
     required this.diskon,
     required this.jumlahPotongan,
     required this.hargaAkhir,
-    required this.daftarNamaBarang,
-    required this.daftarHargaBarang,
+    required this.listBarang,
     required this.riwayatPenjualan,
   });
 
@@ -355,12 +282,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: "Koperasi Sekolah",
       theme: ThemeData(
-        primaryColor: Colors.blue[800],
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue[800]!),
         useMaterial3: true,
+        fontFamily: 'SF Pro Display',
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1565C0)),
       ),
       home: HomePage(
-        // Meneruskan data ke HomePage
         namaBarang: namaBarang,
         kategori: kategori,
         lokasiRak: lokasiRak,
@@ -373,22 +299,17 @@ class MyApp extends StatelessWidget {
         diskon: diskon,
         jumlahPotongan: jumlahPotongan,
         hargaAkhir: hargaAkhir,
-        daftarNamaBarang: daftarNamaBarang,
-        daftarHargaBarang: daftarHargaBarang,
+        listBarang: listBarang,
         riwayatPenjualan: riwayatPenjualan,
       ),
     );
   }
 }
 
-
 // ====================================================================
 // HALAMAN UTAMA (HomePage)
-// Widget ini menampilkan semua hasil transaksi dan daftar barang
-// di browser / layar aplikasi dengan UI/UX yang modern.
 // ====================================================================
-class HomePage extends StatelessWidget {
-  // Variabel untuk menerima data dari MyApp
+class HomePage extends StatefulWidget {
   final String namaBarang;
   final String kategori;
   final String lokasiRak;
@@ -401,8 +322,7 @@ class HomePage extends StatelessWidget {
   final double diskon;
   final double jumlahPotongan;
   final double hargaAkhir;
-  final List<String> daftarNamaBarang;
-  final List<int> daftarHargaBarang;
+  final List<Barang> listBarang; // Menerima List Objek
   final List<String> riwayatPenjualan;
 
   const HomePage({
@@ -419,27 +339,113 @@ class HomePage extends StatelessWidget {
     required this.diskon,
     required this.jumlahPotongan,
     required this.hargaAkhir,
-    required this.daftarNamaBarang,
-    required this.daftarHargaBarang,
+    required this.listBarang,
     required this.riwayatPenjualan,
   });
 
-  // Helper method untuk membuat baris informasi di dalam card
-  Widget _buildInfoRow(IconData icon, String label, String value, {Color? valueColor}) {
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+  int _selectedIndex = 0;
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 60, 24, 40),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Selamat Datang 👋",
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Koperasi Sekolah",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Transaksi hari ini",
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
+              ),
+            ],
+          ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.store, color: Colors.white, size: 30),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReceiptRow(String label, String value, {bool isBold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(icon, size: 20, color: Colors.blueGrey),
-          const SizedBox(width: 12),
-          Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-          const Spacer(),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
           Text(
             value,
             style: TextStyle(
+              color: Colors.black87,
               fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: valueColor ?? Colors.black87,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
             ),
           ),
         ],
@@ -447,304 +453,356 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Helper method untuk membuat judul pada section card
-  Widget _buildSectionTitle(String title, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.blue[800], size: 24),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.blue[800],
+  Widget _buildReceiptCard() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const Text(
+            "KOPERASI SMK",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+          ),
+          const Text(
+            "Digital Receipt",
+            style: TextStyle(color: Colors.grey, fontSize: 12),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: List.generate(
+              40,
+              (index) => Expanded(
+                child: Container(
+                  height: 1,
+                  color: index % 2 == 0 ? Colors.grey : Colors.transparent,
+                  margin: const EdgeInsets.only(right: 2),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          _buildReceiptRow("Nama Barang", widget.namaBarang),
+          _buildReceiptRow("Jumlah Beli", "${widget.jumlahBeli} pcs"),
+          _buildReceiptRow("Harga Satuan", formatRupiah(widget.hargaDipakai)),
+          const SizedBox(height: 8),
+          _buildReceiptRow("Total Belanja", formatRupiah(widget.totalBelanja), isBold: true),
+          _buildReceiptRow("Diskon", "${widget.diskon * 100}%", isBold: true),
+          
+          const SizedBox(height: 16),
+          Row(
+            children: List.generate(
+              40,
+              (index) => Expanded(
+                child: Container(
+                  height: 1,
+                  color: index % 2 == 0 ? Colors.grey : Colors.transparent,
+                  margin: const EdgeInsets.only(right: 2),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1565C0), Color(0xFFE53935)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFE53935).withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  "TOTAL BAYAR",
+                  style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  formatRupiah(widget.hargaAkhir),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Kartu produk sekarang mengambil data langsung dari List<Barang>
+  Widget _buildProductCard(int index) {
+    Barang barang = widget.listBarang[index]; // Mengambil objek dari list
+    
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isTapped = false;
+        return GestureDetector(
+          onTapDown: (_) => setState(() => isTapped = true),
+          onTapUp: (_) => setState(() => isTapped = false),
+          onTapCancel: () => setState(() => isTapped = false),
+          child: AnimatedScale(
+            scale: isTapped ? 0.97 : 1.0,
+            duration: const Duration(milliseconds: 150),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1565C0).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.inventory_2, color: Color(0xFF1565C0)),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          barang.nama, // Ambil dari objek
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          barang.isTersedia() ? "🟢 Tersedia" : "🔴 Stok Habis", // Ambil dari method objek
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: barang.isTersedia() ? Colors.green : Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE53935).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      formatRupiah(barang.harga), // Ambil dari objek
+                      style: const TextStyle(
+                        color: Color(0xFFE53935),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+    );
+  }
+
+  Widget _buildExpandableSection() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text("Detail Transaksi & Barang", style: TextStyle(fontWeight: FontWeight.bold)),
+          leading: const Icon(Icons.receipt_long, color: Color(0xFF1565C0)),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          children: [
+            _buildReceiptRow("Nama Barang", widget.namaBarang),
+            _buildReceiptRow("Kategori", widget.kategori),
+            _buildReceiptRow("Lokasi Rak", widget.lokasiRak),
+            _buildReceiptRow("Status Anggota", widget.anggota ? "Anggota" : "Umum"),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text("Daftar Barang Koperasi:", style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: widget.listBarang.length, // Pakai panjang list objek
+              itemBuilder: (context, index) => _buildProductCard(index),
+            ),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text("Riwayat Simulasi Penjualan (While Loop):", style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: widget.riwayatPenjualan.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.arrow_circle_right, color: Colors.redAccent, size: 18),
+                  title: Text(widget.riwayatPenjualan[index], style: const TextStyle(fontSize: 14)),
+                );
+              },
+            ),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildBottomMenu() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        selectedItemColor: const Color(0xFF1565C0),
+        unselectedItemColor: Colors.grey[400],
+        showUnselectedLabels: false,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), activeIcon: Icon(Icons.shopping_cart), label: "Transaksi"),
+          BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: "Barang"),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: "Profil"),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100], // Latar belakang abu-abu muda
-      appBar: AppBar(
-        elevation: 1, // Elevation ringan
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.blue[800],
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Koperasi Sekolah",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+      backgroundColor: const Color(0xFFF5F7FA),
+      extendBodyBehindAppBar: true,
+      body: SafeArea(
+        top: false,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  const SizedBox(height: 16),
+                  _buildReceiptCard(),
+                  _buildExpandableSection(),
+                  const SizedBox(height: 80),
+                ],
+              ),
             ),
-            Text(
-              "Sistem Informasi Transaksi",
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+        ),
+      ),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1565C0), Color(0xFF0D47A1)],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1565C0).withValues(alpha: 0.4),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: Icon(Icons.store, size: 28),
-          ),
-        ],
-      ),
-      
-      // SafeArea & SingleChildScrollView agar responsif di berbagai layar
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ======================================================
-              // KARTU 1: INFORMASI BARANG
-              // ======================================================
-              Card(
-                elevation: 2,
-                shadowColor: Colors.black12,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionTitle("Informasi Barang", Icons.inventory),
-                      const Divider(height: 24, thickness: 1),
-                      _buildInfoRow(Icons.inventory_2, "Nama Barang", namaBarang),
-                      _buildInfoRow(Icons.category, "Kategori", kategori),
-                      _buildInfoRow(Icons.location_on, "Lokasi Rak", lokasiRak),
-                      // Tampilkan status memakai kondisi (warna dan teks berubah otomatis)
-                      _buildInfoRow(
-                        Icons.check_circle,
-                        "Status Tersedia",
-                        statusTersedia ? "Tersedia" : "Habis",
-                        valueColor: statusTersedia ? Colors.green : Colors.red,
-                      ),
-                    ],
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(30),
+            onTap: () {},
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.add, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text(
+                    "Tambah Transaksi",
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
-                ),
+                ],
               ),
-
-              const SizedBox(height: 16),
-
-              // ======================================================
-              // KARTU 2: INFORMASI PEMBELI
-              // ======================================================
-              Card(
-                elevation: 2,
-                shadowColor: Colors.black12,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionTitle("Informasi Pembeli", Icons.person),
-                      const Divider(height: 24, thickness: 1),
-                      _buildInfoRow(
-                        Icons.card_membership,
-                        "Status Anggota",
-                        anggota ? "Anggota" : "Umum",
-                        valueColor: anggota ? Colors.blue[800] : Colors.orange,
-                      ),
-                      _buildInfoRow(Icons.shopping_cart, "Jumlah Beli", "$jumlahBeli pcs"),
-                      // Menggunakan formatRupiah untuk pemisah ribuan
-                      _buildInfoRow(Icons.payments, "Harga Satuan", formatRupiah(hargaDipakai)),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // ======================================================
-              // KARTU 3: RINGKASAN TRANSAKSI
-              // ======================================================
-              Card(
-                elevation: 4,
-                shadowColor: Colors.blue.withValues(alpha: 0.2),
-                color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionTitle("Ringkasan Transaksi", Icons.receipt_long),
-                      const Divider(height: 24, thickness: 1),
-                      // Menggunakan formatRupiah untuk pemisah ribuan
-                      _buildInfoRow(Icons.calculate, "Total Belanja", formatRupiah(totalBelanja)),
-                      _buildInfoRow(
-                        Icons.discount,
-                        "Diskon",
-                        "${diskon * 100}%",
-                        valueColor: Colors.redAccent,
-                      ),
-                      _buildInfoRow(Icons.money_off, "Jumlah Potongan", formatRupiah(jumlahPotongan)),
-                      const SizedBox(height: 12),
-                      // Harga Akhir dibuat paling menonjol
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.blue[100]!),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              "Harga Akhir",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blueGrey,
-                              ),
-                            ),
-                            // Menggunakan formatRupiah untuk pemisah ribuan
-                            Text(
-                              formatRupiah(hargaAkhir),
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red[700], // Aksen merah
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // ======================================================
-              // KARTU 4: DAFTAR BARANG (LIST VIEW BUILDER)
-              // ======================================================
-              Card(
-                elevation: 2,
-                shadowColor: Colors.black12,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionTitle("Daftar Barang Koperasi", Icons.list_alt),
-                      const Divider(height: 24, thickness: 1),
-                      // Menggunakan ListView.builder untuk efisiien
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: daftarNamaBarang.length,
-                        itemBuilder: (context, index) {
-                          return Column(
-                            children: [
-                              ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: CircleAvatar(
-                                  backgroundColor: Colors.blue[50],
-                                  child: Text(
-                                    "${index + 1}",
-                                    style: TextStyle(
-                                      color: Colors.blue[800],
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                title: Text(
-                                  daftarNamaBarang[index],
-                                  style: const TextStyle(fontWeight: FontWeight.w500),
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.inventory, size: 16, color: Colors.grey),
-                                    const SizedBox(width: 4),
-                                    // Menggunakan formatRupiah untuk pemisah ribuan
-                                    Text(
-                                      formatRupiah(daftarHargaBarang[index]),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (index < daftarNamaBarang.length - 1)
-                                const Divider(height: 1, thickness: 1),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // ======================================================
-              // KARTU 5: RIWAYAT PENJUALAN WHILE LOOP
-              // ======================================================
-              Card(
-                elevation: 2,
-                shadowColor: Colors.black12,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionTitle("Simulasi Penjualan (While Loop)", Icons.sync),
-                      const Divider(height: 24, thickness: 1),
-                      // Menampilkan riwayat penjualan dari while loop
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: riwayatPenjualan.length,
-                        itemBuilder: (context, index) {
-                          return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(vertical: 2.0),
-                            dense: true,
-                            leading: const Icon(Icons.arrow_circle_right, color: Colors.redAccent, size: 20),
-                            title: Text(
-                              riwayatPenjualan[index],
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-              
-              // Footer kecil
-              Center(
-                child: Text(
-                  "Koperasi Sekolah © 2024",
-                  style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: _buildBottomMenu(),
     );
   }
 }
