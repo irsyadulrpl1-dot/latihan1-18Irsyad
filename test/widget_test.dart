@@ -3,7 +3,6 @@ import 'package:latihan1_18irsyad/main.dart'; // Ganti dengan nama package/proye
 
 void main() {
   testWidgets('Smoke test MyApp', (WidgetTester tester) async {
-    // Buat dummy list untuk test
     List<Barang> dummyList = [
       Barang(nama: "Test A", harga: 1000.0, stok: 5),
     ];
@@ -24,6 +23,7 @@ void main() {
         hargaAkhir: 3000.0,
         listBarang: dummyList,
         riwayatPenjualan: ["Terjual 1, sisa stok: 0"],
+        notifikasiDemo: "✅ Notifikasi: Berhasil", // Tambahkan ini
       ),
     );
 

@@ -37,24 +37,30 @@ double hitungHargaAkhir(double total, double persenPotongan) {
 }
 
 // ====================================================================
-// RPL-12.2-504: JUSTIFIKASI OOP
-// --------------------------------------------------------------------
-// PERTANYAAN: 
-// "Apa keuntungan memodelkan barang sebagai objek bagi pengembangan 
-// sistem koperasi ke depan?"
-//
-// JAWABAN:
-// Memodelkan barang sebagai objek (OOP) membuat kode jauh lebih 
-// terstruktur, rapi, dan mudah dikembangkan. Keuntungan utamanya:
-// 1. Data Terpusat: Nama, harga, dan stok disatukan dalam satu wadah 
-//    (objek), tidak bertebaran di variabel lepas atau list terpisah.
-// 2. Mudah Dikembangkan: Kalau ke depan koperasi mau tambah atribut 
-//    (misal: tanggal kadaluarsa atau kode barcode), kita cukup 
-//    tambahkan di kelas Barang saja, tidak perlu utak-atik kode di 
-//    seluruh aplikasi.
-// 3. Punya Perilaku (Method): Objek bisa punya fungsi bawaan seperti 
-//    isTersedia() atau tampilkan(), sehingga logika bisnis koperasi 
-//    jadi lebih rapi dan gampang dipakai ulang.
+// FUNGSI NOTIFIKASI (RPL-12.2-702)
+// Fungsi untuk memproses input pembelian, mengubah ke int, dan menangani error.
+// ====================================================================
+String prosesBeli(String input) {
+  try {
+    // Mencoba mengubah input teks menjadi integer
+    int jumlah = int.parse(input);
+    
+    // Cek apakah input bernilai negatif
+    if (jumlah < 0) {
+      return "❌ Notifikasi: Input tidak boleh negatif! Transaksi dibatalkan.";
+    } else if (jumlah == 0) {
+      return "⚠️ Notifikasi: Jumlah beli 0, tidak ada transaksi yang diproses.";
+    } else {
+      return "✅ Notifikasi: Berhasil memproses pembelian sebanyak $jumlah pcs.";
+    }
+  } catch (e) {
+    // Menangani error jika input bukan angka (misal: huruf atau simbol)
+    return "❌ Notifikasi: Input bukan angka! Transaksi dibatalkan.";
+  }
+}
+
+// ====================================================================
+// KELAS INDUK: BARANG
 // ====================================================================
 class Barang {
   String nama;
@@ -71,6 +77,36 @@ class Barang {
     print("----------------------------");
     print("📦 Nama Barang : $nama");
     print("💰 Harga       : ${formatRupiah(harga)}");
+    print("📊 Stok        : $stok pcs");
+    print("✅ Status      : ${isTersedia() ? 'Tersedia' : 'Habis'}");
+    print("----------------------------");
+  }
+}
+
+// ====================================================================
+// KELAS ANAK: BARANG PROMO
+// ====================================================================
+class BarangPromo extends Barang {
+  double diskon;
+
+  BarangPromo({
+    required String nama,
+    required double harga,
+    required int stok,
+    required this.diskon,
+  }) : super(nama: nama, harga: harga, stok: stok);
+
+  double hargaPromo() {
+    return harga - (harga * diskon / 100);
+  }
+
+  @override
+  void tampilkan() {
+    print("----------------------------");
+    print("🎉 Nama Barang : $nama (PROMO)");
+    print("💰 Harga Asli  : ${formatRupiah(harga)}");
+    print("📉 Diskon      : $diskon%");
+    print("💸 Harga Promo : ${formatRupiah(hargaPromo())}");
     print("📊 Stok        : $stok pcs");
     print("✅ Status      : ${isTersedia() ? 'Tersedia' : 'Habis'}");
     print("----------------------------");
@@ -94,17 +130,37 @@ void main() {
   int jumlahStok = barang1.stok;
 
   // ==============================================================
-  // FITUR (RPL-12.2-502 & RPL-12.2-503): LIST OBJEK BARANG
+  // FITUR (RPL-12.2-602): BUAT 1 OBJEK BARANGPROMO & TAMPILKAN
   // ==============================================================
+  BarangPromo barangPromo1 = BarangPromo(
+    nama: "Buku Gambar", 
+    harga: 5000.0, 
+    stok: 30, 
+    diskon: 20.0
+  );
+
   Barang barang2 = Barang(nama: "Pulpen", harga: 2500.0, stok: 50);
   Barang barang3 = Barang(nama: "Roti", harga: 5000.0, stok: 15);
   
-  List<Barang> listBarang = [barang1, barang2, barang3];
+  List<Barang> listBarang = [barang1, barang2, barang3, barangPromo1];
 
-  print("=== KARTU BARANG KOPERASI (List Objek) ===");
+  print("=== KARTU BARANG KOPERASI (Pewarisan 2) ===");
   for (Barang item in listBarang) {
     item.tampilkan();
   }
+
+  // ==============================================================
+  // SIMULASI NOTIFIKASI (RPL-12.2-702)
+  // ==============================================================
+  print("\n--- SIMULASI FUNGSI prosesBeli() ---");
+  // Uji coba 3 skenario input
+  String notif1 = prosesBeli("80");      // Input benar
+  String notif2 = prosesBeli("delapan"); // Input error (huruf)
+  String notif3 = prosesBeli("-5");      // Input error (negatif)
+  
+  print(notif1);
+  print(notif2);
+  print(notif3);
 
   bool tersedia = barang1.isTersedia();
   bool statusTersedia = tersedia;
@@ -228,6 +284,7 @@ void main() {
       hargaAkhir: hargaAkhir,
       listBarang: listBarang,
       riwayatPenjualan: riwayatPenjualan,
+      notifikasiDemo: notif2, // Mengirim salah satu hasil notifikasi ke UI
     ),
   );
 }
@@ -250,6 +307,7 @@ class MyApp extends StatelessWidget {
   final double hargaAkhir;
   final List<Barang> listBarang;
   final List<String> riwayatPenjualan;
+  final String notifikasiDemo; // Variabel notifikasi baru
 
   const MyApp({
     super.key,
@@ -267,6 +325,7 @@ class MyApp extends StatelessWidget {
     required this.hargaAkhir,
     required this.listBarang,
     required this.riwayatPenjualan,
+    required this.notifikasiDemo,
   });
 
   @override
@@ -294,6 +353,7 @@ class MyApp extends StatelessWidget {
         hargaAkhir: hargaAkhir,
         listBarang: listBarang,
         riwayatPenjualan: riwayatPenjualan,
+        notifikasiDemo: notifikasiDemo,
       ),
     );
   }
@@ -317,6 +377,7 @@ class HomePage extends StatefulWidget {
   final double hargaAkhir;
   final List<Barang> listBarang;
   final List<String> riwayatPenjualan;
+  final String notifikasiDemo;
 
   const HomePage({
     super.key,
@@ -334,6 +395,7 @@ class HomePage extends StatefulWidget {
     required this.hargaAkhir,
     required this.listBarang,
     required this.riwayatPenjualan,
+    required this.notifikasiDemo,
   });
 
   @override
@@ -551,6 +613,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   Widget _buildProductCard(int index) {
     Barang barang = widget.listBarang[index];
+    bool isPromo = barang is BarangPromo;
     
     return StatefulBuilder(
       builder: (context, setState) {
@@ -582,10 +645,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1565C0).withValues(alpha: 0.1),
+                      color: isPromo ? const Color(0xFFE53935).withValues(alpha: 0.1) : const Color(0xFF1565C0).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.inventory_2, color: Color(0xFF1565C0)),
+                    child: Icon(
+                      isPromo ? Icons.local_offer : Icons.inventory_2, 
+                      color: isPromo ? const Color(0xFFE53935) : const Color(0xFF1565C0)
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -593,7 +659,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          barang.nama,
+                          barang.nama + (isPromo ? " 🎉" : ""),
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 4),
@@ -610,15 +676,31 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE53935).withValues(alpha: 0.1),
+                      color: isPromo ? Colors.orange.withValues(alpha: 0.1) : const Color(0xFFE53935).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text(
-                      formatRupiah(barang.harga),
-                      style: const TextStyle(
-                        color: Color(0xFFE53935),
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (isPromo)
+                          Text(
+                            formatRupiah(barang.harga),
+                            style: TextStyle(
+                              decoration: TextDecoration.lineThrough,
+                              color: Colors.grey[500],
+                              fontSize: 12,
+                            ),
+                          ),
+                        Text(
+                          isPromo 
+                            ? formatRupiah((barang as BarangPromo).hargaPromo())
+                            : formatRupiah(barang.harga), 
+                          style: TextStyle(
+                            color: isPromo ? Colors.orange : const Color(0xFFE53935),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -661,7 +743,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text("Daftar Barang Koperasi:", style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text("Daftar Barang Koperasi (Termasuk Promo):", style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
             ListView.builder(
@@ -690,6 +772,27 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   title: Text(widget.riwayatPenjualan[index], style: const TextStyle(fontSize: 14)),
                 );
               },
+            ),
+            // Menampilkan Notifikasi Demo di bagian bawah expandable
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text("Notifikasi Sistem (prosesBeli):", style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Text(
+                widget.notifikasiDemo,
+                style: const TextStyle(fontSize: 14, color: Colors.redAccent),
+              ),
             ),
           ],
         ),
