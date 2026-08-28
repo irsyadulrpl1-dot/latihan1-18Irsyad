@@ -37,8 +37,14 @@ double hitungHargaAkhir(double total, double persenPotongan) {
 }
 
 // ====================================================================
-// FUNGSI NOTIFIKASI (RPL-12.2-702)
-// Fungsi untuk memproses input pembelian, mengubah ke int, dan menangani error.
+// FUNGSI NOTIFIKASI & UJI KETAHANAN (RPL-12.2-702 & RPL-12.2-703)
+// ----------------------------------------------------------------
+// RPL-12.2-703: UJI KETAHANAN (PENANGANAN GALAT)
+// PERTANYAAN: "Bagaimana penanganan galat agar program tetap lanjut?"
+// JAWABAN: Kita pake blok try { ... } catch (e) { ... }. Jadi pas 
+// program di dalam try nemu error (kayak masukin huruf), dia gak 
+// langsung crash, tapi langsung lompat ke catch buat nampilin 
+// notifikasi peringatan. Aplikasinya tetap aman jalan.
 // ====================================================================
 String prosesBeli(String input) {
   try {
@@ -89,6 +95,7 @@ class Barang {
 class BarangPromo extends Barang {
   double diskon;
 
+  // ignore: use_super_parameters
   BarangPromo({
     required String nama,
     required double harga,
@@ -693,7 +700,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           ),
                         Text(
                           isPromo 
-                            ? formatRupiah((barang as BarangPromo).hargaPromo())
+                            ? formatRupiah(barang.hargaPromo)
                             : formatRupiah(barang.harga), 
                           style: TextStyle(
                             color: isPromo ? Colors.orange : const Color(0xFFE53935),
