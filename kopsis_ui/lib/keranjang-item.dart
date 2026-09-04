@@ -2,11 +2,7 @@
 import 'package:flutter/material.dart';
 
 class KeranjangItem extends StatefulWidget {
-  // TAMBAHAN: Bikin varibel callback buat nangkap event tombol +
-  final VoidCallback? onTambah;
-
-  // TAMBAHAN: Masukin onTambah ke constructor
-  const KeranjangItem({super.key, this.onTambah});
+  const KeranjangItem({super.key, required Null Function() onTambah});
 
   @override
   State<KeranjangItem> createState() => _KeranjangItemState();
@@ -16,7 +12,21 @@ class _KeranjangItemState extends State<KeranjangItem> {
   int jumlah = 1;
 
   @override
+  void initState() {
+    super.initState();
+    print('initState dipanggil');
+  }
+
+  @override
+  void dispose() {
+    print('dispose dipanggil');
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print('build dipanggil');
+    
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -35,7 +45,6 @@ class _KeranjangItemState extends State<KeranjangItem> {
             setState(() {
               jumlah++;
             });
-            widget.onTambah?.call(); 
           },
         ),
       ],

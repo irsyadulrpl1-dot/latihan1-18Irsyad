@@ -30,13 +30,7 @@ class _BarangCardState extends State<BarangCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(8),
-      child: ListTile(
-        leading: const Icon(Icons.inventory_2),
-        title: Text(widget.nama),
-        subtitle: Text('Anggota Rp' + widget.hargaAnggota.toString() + ' | Stok: ' + stokSekarang.toString()),
-        trailing: KeranjangItem(
+    var keranjangItem = KeranjangItem(
           onTambah: () {
             setState(() {
               if (stokSekarang > 0) {
@@ -44,7 +38,14 @@ class _BarangCardState extends State<BarangCard> {
               }
             });
           },
-        ),
+        );
+    return Card(
+      margin: const EdgeInsets.all(8),
+      child: ListTile(
+        leading: const Icon(Icons.inventory_2),
+        title: Text(widget.nama),
+        subtitle: Text('Anggota Rp' + widget.hargaAnggota.toString() + ' | Stok: ' + stokSekarang.toString()),
+        trailing: keranjangItem,
       ),
     );
   }
