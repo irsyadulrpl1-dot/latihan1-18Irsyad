@@ -1,3 +1,4 @@
+import 'barang_card.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(const MyApp());
@@ -28,14 +29,10 @@ class MyApp extends StatelessWidget {
           itemCount: daftarBarang.length,
           itemBuilder: (context, index) {
             final barang = daftarBarang[index];
-            return Card(
-              margin: const EdgeInsets.all(8),
-              child: ListTile(
-                leading: const Icon(Icons.inventory_2),
-                title: Text(barang['nama']),
-                subtitle: Text('Anggota: Rp${barang['anggota']} | Umum: Rp${barang['umum']}'),
-                trailing: Text('Stok: ${barang['stok']}'),
-              ),
+            return BarangCard(
+              nama: barang['nama'],
+              hargaAnggota: barang['anggota'],
+              stok: barang['stok'],
             );
           },
         ),
