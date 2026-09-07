@@ -43,7 +43,14 @@ class _BarangCardState extends State<BarangCard> {
       margin: const EdgeInsets.all(8),
       child: ListTile(
         leading: const Icon(Icons.inventory_2),
-        title: Text(widget.nama),
+        // PERBAIKAN OVERFLOW (LANGKAH 1 & 2): Bungkus Text dengan Expanded
+        title: Expanded(
+          child: Text(
+            widget.nama,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
         subtitle: Text('Anggota Rp' + widget.hargaAnggota.toString() + ' | Stok: ' + stokSekarang.toString()),
         trailing: keranjangItem,
       ),

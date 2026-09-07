@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   final List<Map<String, dynamic>> daftarBarang = const [
-    {'nama': 'Buku Tulis', 'anggota': 3000, 'umum': 3500, 'stok': 40},
+    {'nama': 'Buku Tulis Bergaris 58 Lembar Sampul Tebal', 'anggota': 3000, 'umum': 3500, 'stok': 40},
     {'nama': 'Pulpen', 'anggota': 2500, 'umum': 3000, 'stok': 25},
     {'nama': 'Roti', 'anggota': 5000, 'umum': 5500, 'stok': 15},
     {'nama': 'Air Mineral', 'anggota': 3000, 'umum': 3500, 'stok': 50},
