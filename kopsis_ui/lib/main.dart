@@ -39,7 +39,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Menyaring daftar barang berdasarkan kotak pencarian
     final hasilCari = daftarBarang.where((b) => 
       b['nama'].toLowerCase().contains(kataCari.toLowerCase())
     ).toList();
@@ -63,15 +62,31 @@ class _MyAppState extends State<MyApp> {
               },
             ),
             Expanded(
-              child: ListView.builder(
-                itemCount: hasilCari.length,
-                itemBuilder: (context, index) {
-                  final barang = hasilCari[index];
-                  // Sesuaikan parameter dengan barang_card.dart milikmu
-                  return BarangCard(
-                    nama: barang['nama'] as String,
-                    hargaAnggota: barang['anggota'] as int,
-                    stok: barang['stok'] as int,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  int colCount = 1;
+                  if (constraints.maxWidth < 600) {
+                    colCount = 1;
+                  } else if (constraints.maxWidth < 900) {
+                    colCount = 2;
+                  } else {
+                    colCount = 3;
+                  }
+
+                  return GridView.builder(
+                    itemCount: hasilCari.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: colCount,
+                      childAspectRatio: 3,
+                    ),
+                    itemBuilder: (context, index) {
+                      final barang = hasilCari[index];
+                      return BarangCard(
+                        nama: barang['nama'] as String,
+                        hargaAnggota: barang['anggota'] as int,
+                        stok: barang['stok'] as int,
+                      );
+                    },
                   );
                 },
               ),
