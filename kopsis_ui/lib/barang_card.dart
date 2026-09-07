@@ -1,7 +1,6 @@
 import 'keranjang-item.dart';
 import 'package:flutter/material.dart';
 
-// UBAH: Dari StatelessWidget jadi StatefulWidget
 class BarangCard extends StatefulWidget {
   final String nama;
   final int hargaAnggota;
@@ -19,31 +18,30 @@ class BarangCard extends StatefulWidget {
 }
 
 class _BarangCardState extends State<BarangCard> {
-  // TAMBAHAN: Bikin variabel lokal biar stoknya bisa berubah saat di-run
   late int stokSekarang;
 
   @override
   void initState() {
     super.initState();
-    stokSekarang = widget.stok; // Ambil stok awal dari parameter
+    stokSekarang = widget.stok;
   }
 
   @override
   Widget build(BuildContext context) {
     var keranjangItem = KeranjangItem(
-          onTambah: () {
-            setState(() {
-              if (stokSekarang > 0) {
-                stokSekarang--;
-              }
-            });
-          },
-        );
+      onTambah: () {
+        setState(() {
+          if (stokSekarang > 0) {
+            stokSekarang--;
+          }
+        });
+      },
+    );
+    
     return Card(
       margin: const EdgeInsets.all(8),
       child: ListTile(
         leading: const Icon(Icons.inventory_2),
-        // PERBAIKAN OVERFLOW (LANGKAH 1 & 2): Bungkus Text dengan Expanded
         title: Expanded(
           child: Text(
             widget.nama,

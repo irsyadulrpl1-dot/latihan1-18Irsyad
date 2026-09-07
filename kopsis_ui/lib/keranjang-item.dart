@@ -1,8 +1,9 @@
-// ignore: file_names
 import 'package:flutter/material.dart';
 
 class KeranjangItem extends StatefulWidget {
-  const KeranjangItem({super.key, required Null Function() onTambah});
+  final VoidCallback? onTambah;
+
+  const KeranjangItem({super.key, this.onTambah});
 
   @override
   State<KeranjangItem> createState() => _KeranjangItemState();
@@ -45,6 +46,7 @@ class _KeranjangItemState extends State<KeranjangItem> {
             setState(() {
               jumlah++;
             });
+            widget.onTambah?.call();
           },
         ),
       ],

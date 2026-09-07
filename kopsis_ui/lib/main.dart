@@ -45,7 +45,7 @@ class _MyAppState extends State<MyApp> {
 
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: const Text('Transaksi Koperasi')),
+        appBar: AppBar(title: const Text('Koperasi Sekolah')),
         body: Column(
           children: [
             TextField(
